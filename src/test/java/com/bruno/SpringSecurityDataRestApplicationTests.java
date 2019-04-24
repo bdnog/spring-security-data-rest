@@ -29,6 +29,7 @@ import org.springframework.web.context.WebApplicationContext;
 public class SpringSecurityDataRestApplicationTests {
 
     private static final String EXAMPLES_API = "/api/examples";
+    private static final String PARAM_API = "/1";
     private static final String OAUTH_API = "/oauth/token";
     private static final String ADMIN_USERNAME = "admin@test.com";
     private static final String AGENT_USERNAME = "agent@test.com";
@@ -39,6 +40,7 @@ public class SpringSecurityDataRestApplicationTests {
     private static final String CONTENT_TYPE_JSON = "application/json;charset=UTF-8";
     private static final String AUTHORIZATION = "Authorization";
     private static final String BEARER = "Bearer ";
+    private static final String PAYLOAD = "{\"name\":\"Test\"}";
 
     @Autowired
     private WebApplicationContext wac;
@@ -51,7 +53,7 @@ public class SpringSecurityDataRestApplicationTests {
     @Before
     public void setUp() {
         mockMvc = MockMvcBuilders
-                .webAppContextSetup(this.wac)
+                .webAppContextSetup(wac)
                 .addFilter(springSecurityFilterChain)
                 .build();
     }
@@ -64,7 +66,7 @@ public class SpringSecurityDataRestApplicationTests {
 
     @Test
     public void givenLoggedUserWhenRefreshingTokenThenReturnNewAccessToken() throws Exception {
-        String refreshToken = obtainToken(ADMIN_USERNAME)[1];
+        var refreshToken = obtainToken(ADMIN_USERNAME)[1];
         var params = new LinkedMultiValueMap<String, String>();
         params.add("grant_type", "refresh_token");
         params.add("refresh_token", refreshToken);
@@ -74,35 +76,47 @@ public class SpringSecurityDataRestApplicationTests {
 
     @Test
     public void givenAgentLoggedInWhenDeletingExampleThenReturn403Error() throws Exception {
-        String accessToken = obtainToken(AGENT_USERNAME)[0];
+        var accessToken = obtainToken(AGENT_USERNAME)[0];
 
-        mockMvc.perform(delete(EXAMPLES_API + "/1")
+        mockMvc.perform(delete(EXAMPLES_API + PARAM_API)
                 .header(AUTHORIZATION, BEARER + accessToken))
                 .andExpect(status().isForbidden());
     }
 
     @Test
     public void givenCustomerLoggedInWhenUpdatingExampleThenReturn403Error() throws Exception {
-        String accessToken = obtainToken(CUSTOMER_USERNAME)[0];
+        var accessToken = obtainToken(CUSTOMER_USERNAME)[0];
 
-        mockMvc.perform(patch(EXAMPLES_API + "/1")
+        mockMvc.perform(patch(EXAMPLES_API + PARAM_API)
                 .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(CONTENT_TYPE_JSON)
                 .accept(CONTENT_TYPE_JSON)
-                .content("{\"name\":\"Test\"}"))
+                .content(PAYLOAD))
                 .andExpect(status().isForbidden());
     }
 
     @Test
-    public void givenAdminLoggedInWhenCrestingExampleThenReturn201Created() throws Exception {
-        String accessToken = obtainToken(ADMIN_USERNAME)[0];
+    public void givenAdminLoggedInWhenCreatingExampleThenReturn201Created() throws Exception {
+        var accessToken = obtainToken(ADMIN_USERNAME)[0];
 
         mockMvc.perform(post(EXAMPLES_API)
                 .header(AUTHORIZATION, BEARER + accessToken)
                 .contentType(CONTENT_TYPE_JSON)
                 .accept(CONTENT_TYPE_JSON)
-                .content("{\"name\":\"Test\"}"))
+                .content(PAYLOAD))
                 .andExpect(status().isCreated());
+    }
+
+    @Test
+    public void givenAgentLoggedInWhenCreatingExampleThenReturn403Error() throws Exception {
+        var accessToken = obtainToken(AGENT_USERNAME)[0];
+
+        mockMvc.perform(post(EXAMPLES_API)
+                .header(AUTHORIZATION, BEARER + accessToken)
+                .contentType(CONTENT_TYPE_JSON)
+                .accept(CONTENT_TYPE_JSON)
+                .content(PAYLOAD))
+                .andExpect(status().isForbidden());
     }
 
     private String[] obtainToken(String username) throws Exception {
