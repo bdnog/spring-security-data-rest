@@ -11,6 +11,7 @@ ext {
     flywayVersion = '5.2.4'
     h2Version = '1.4.199'
     mysqlVersion = '8.0.15'
+    jaxbVersion = '2.1.2'
     oauth2Version = '2.3.5.RELEASE'
 }
 
@@ -35,7 +36,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-security'
     implementation "org.springframework.security.oauth:spring-security-oauth2:${oauth2Version}"
     implementation "org.flywaydb:flyway-core:${flywayVersion}"
-    implementation "com.sun.xml.bind:jaxb-impl:2.1.2"
+    implementation "com.sun.xml.bind:jaxb-impl:${jaxbVersion}"
 
     compileOnly "org.projectlombok:lombok:${lombokVersion}"
 
