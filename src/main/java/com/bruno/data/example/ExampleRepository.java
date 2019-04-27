@@ -1,6 +1,5 @@
-package com.bruno.api;
+package com.bruno.data.example;
 
-import com.bruno.data.example.Example;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.repository.Repository;
